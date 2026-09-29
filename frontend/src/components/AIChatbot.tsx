@@ -475,7 +475,7 @@ export default function AIChatbot({ documents, onOpenStudyToolsPage }: AIChatbot
       }
 
       try {
-        const response = await fetch('http://localhost:8000/study-tool/generate', {
+      const response = await fetch('https://prepverse-ai-service.onrender.com/study-tool/generate', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -511,7 +511,7 @@ export default function AIChatbot({ documents, onOpenStudyToolsPage }: AIChatbot
     }
 
     try {
-      const response = await fetch('http://localhost:8000/query', {
+      const response = await fetch('https://prepverse-ai-service.onrender.com/query', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -594,7 +594,7 @@ export default function AIChatbot({ documents, onOpenStudyToolsPage }: AIChatbot
       : [];
 
     try {
-      const response = await fetch('http://localhost:8000/study-tool/generate', {
+      const response = await fetch('https://prepverse-ai-service.onrender.com/study-tool/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

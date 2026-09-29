@@ -100,7 +100,7 @@ export default function DocManager({ documents, setDocuments }: DocManagerProps)
       formData.append('file', file);
       formData.append('tags', activeSubject !== 'ALL' ? activeSubject : 'General');
 
-      const response = await fetch('http://localhost:8000/process-document', {
+      const response = await fetch('https://prepverse-ai-service.onrender.com/process-document', {
         method: 'POST',
         body: formData,
       });
@@ -152,7 +152,7 @@ export default function DocManager({ documents, setDocuments }: DocManagerProps)
       formData.append('file', file);
       formData.append('tags', newNoteSubject);
 
-      const response = await fetch('http://localhost:8000/process-document', {
+      const response = await fetch('https://prepverse-ai-service.onrender.com/process-document', {
         method: 'POST',
         body: formData,
       });

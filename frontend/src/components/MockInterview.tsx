@@ -126,7 +126,7 @@ export default function MockInterview({ documents, onCompleteSession, setIntervi
     setIsLoadingQuestions(true);
 
     try {
-      const response = await fetch('http://localhost:8000/interview/generate-questions', {
+      const response = await fetch('https://prepverse-ai-service.onrender.com/interview/generate-questions', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

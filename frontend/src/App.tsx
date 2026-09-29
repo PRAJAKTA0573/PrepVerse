@@ -130,7 +130,7 @@ export default function App() {
     setInfoMsg('');
 
     try {
-      const response = await fetch('http://localhost:8000/api/auth/login', {
+      const response = await fetch('https://prepverse-ai-service.onrender.com/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: email.trim(), password: password.trim() })
@@ -158,7 +158,7 @@ export default function App() {
     setInfoMsg('');
 
     try {
-      const response = await fetch('http://localhost:8000/api/auth/signup', {
+      const response = await fetch('https://prepverse-ai-service.onrender.com/api/auth/signup', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name: name.trim(), email: email.trim(), password: password.trim() })
@@ -185,7 +185,7 @@ export default function App() {
     setInfoMsg('');
 
     try {
-      const response = await fetch('http://localhost:8000/api/auth/verify-otp', {
+      const response = await fetch('https://prepverse-ai-service.onrender.com/api/auth/verify-otp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
