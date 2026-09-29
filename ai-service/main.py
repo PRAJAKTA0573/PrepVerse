@@ -831,24 +831,19 @@ def is_valid_email(email_str: str) -> bool:
 
 def send_verification_email(to_email: str, otp_code: str):
     """
-    Sends verification email via SMTP if credentials are set in environment variables.
+    Sends verification email via Resend HTTP API (works on Render free tier).
+    Falls back to logging the OTP if API key is not configured.
     """
-    smtp_server = os.getenv("SMTP_SERVER")
-    smtp_port = os.getenv("SMTP_PORT", "587")
-    smtp_username = os.getenv("SMTP_USERNAME")
-    smtp_password = os.getenv("SMTP_PASSWORD")
-    sender_email = os.getenv("SMTP_FROM_EMAIL", smtp_username or "noreply@prepverse.ai")
+    import urllib.request
+    import json as json_lib
 
-    print(f"[PrepVerse Email Service] Dispatching verification email for {to_email} (server={smtp_server}, user={smtp_username})...", flush=True)
+    resend_api_key = os.getenv("RESEND_API_KEY")
+    sender_email = os.getenv("SMTP_FROM_EMAIL", "onboarding@resend.dev")
 
-    if smtp_server and smtp_username and smtp_password:
+    print(f"[PrepVerse Email Service] Dispatching verification email for {to_email}...", flush=True)
+
+    if resend_api_key:
         try:
-            msg = MIMEMultipart("alternative")
-            msg["Subject"] = f"PrepVerse AI - Email Verification Code: {otp_code}"
-            msg["From"] = f"PrepVerse AI <{sender_email}>"
-            msg["To"] = to_email
-
-            text_content = f"Hello,\n\nYour 6-digit verification code is: {otp_code}\n\nPlease enter this code to verify your PrepVerse AI account.\n\nBest regards,\nPrepVerse AI Team"
             html_content = f"""
             <html>
               <body style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #0f172a; color: #f8fafc; padding: 20px;">
@@ -863,28 +858,36 @@ def send_verification_email(to_email: str, otp_code: str):
               </body>
             </html>
             """
-            msg.attach(MIMEText(text_content, "plain"))
-            msg.attach(MIMEText(html_content, "html"))
 
-            port = int(smtp_port)
-            if port == 465:
-                with smtplib.SMTP_SSL(smtp_server, port) as server:
-                    server.login(smtp_username, smtp_password)
-                    server.sendmail(sender_email, [to_email], msg.as_string())
-            else:
-                with smtplib.SMTP(smtp_server, port) as server:
-                    server.ehlo()
-                    server.starttls()
-                    server.ehlo()
-                    server.login(smtp_username, smtp_password)
-                    server.sendmail(sender_email, [to_email], msg.as_string())
-            print(f"[PrepVerse Email Service] Verification email successfully sent to {to_email}", flush=True)
+            payload = json_lib.dumps({
+                "from": f"PrepVerse AI <{sender_email}>",
+                "to": [to_email],
+                "subject": f"PrepVerse AI - Email Verification Code: {otp_code}",
+                "html": html_content,
+                "text": f"Your PrepVerse AI verification code is: {otp_code}"
+            }).encode("utf-8")
+
+            req = urllib.request.Request(
+                "https://api.resend.com/emails",
+                data=payload,
+                headers={
+                    "Authorization": f"Bearer {resend_api_key}",
+                    "Content-Type": "application/json"
+                },
+                method="POST"
+            )
+
+            with urllib.request.urlopen(req, timeout=10) as resp:
+                result = json_lib.loads(resp.read().decode())
+                print(f"[PrepVerse Email Service] Email sent successfully via Resend. ID: {result.get('id')}", flush=True)
+
         except Exception as e:
-            print(f"[PrepVerse Email Service ERROR] Failed to send email to {to_email}: {type(e).__name__} - {e}", flush=True)
+            print(f"[PrepVerse Email Service ERROR] Resend API failed for {to_email}: {type(e).__name__} - {e}", flush=True)
+            print(f"[PrepVerse Email Service] OTP for '{to_email}': {otp_code}", flush=True)
     else:
         print(f"==========================================================================", flush=True)
         print(f"[PrepVerse Email Service] Verification Code generated for '{to_email}': {otp_code}", flush=True)
-        print(f"(Note: To deliver real emails, configure SMTP_SERVER, SMTP_USERNAME, and SMTP_PASSWORD in your environment.)", flush=True)
+        print(f"(Note: Set RESEND_API_KEY environment variable to enable real email delivery.)", flush=True)
         print(f"==========================================================================", flush=True)
 
 @app.post("/api/auth/send-otp")
